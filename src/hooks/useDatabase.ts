@@ -45,9 +45,21 @@ export function useClients() {
                   try {
                     const processedClient = {
                       ...remoteClient,
-                      createdAt: remoteClient.createdAt instanceof Date ? remoteClient.createdAt : new Date(remoteClient.createdAt),
-                      updatedAt: remoteClient.updatedAt instanceof Date ? remoteClient.updatedAt : new Date(remoteClient.updatedAt),
-                      lastModified: remoteClient.lastModified instanceof Date ? remoteClient.lastModified : new Date(remoteClient.lastModified || remoteClient.updatedAt)
+                      createdAt: remoteClient.createdAt instanceof Date ? remoteClient.createdAt : 
+                        (() => {
+                          const date = new Date(remoteClient.createdAt);
+                          return isNaN(date.getTime()) ? new Date() : date;
+                        })(),
+                      updatedAt: remoteClient.updatedAt instanceof Date ? remoteClient.updatedAt : 
+                        (() => {
+                          const date = new Date(remoteClient.updatedAt);
+                          return isNaN(date.getTime()) ? new Date() : date;
+                        })(),
+                      lastModified: remoteClient.lastModified instanceof Date ? remoteClient.lastModified : 
+                        (() => {
+                          const date = new Date(remoteClient.lastModified || remoteClient.updatedAt);
+                          return isNaN(date.getTime()) ? new Date() : date;
+                        })()
                     };
                     clientMap.set(remoteClient.id, processedClient);
                   } catch (dateError) {
@@ -155,9 +167,21 @@ export function useReceipts() {
               // Convert date strings to Date objects
               const processedReceipt = {
                 ...remoteReceipt,
-                date: remoteReceipt.date instanceof Date ? remoteReceipt.date : new Date(remoteReceipt.date),
-                createdAt: remoteReceipt.createdAt instanceof Date ? remoteReceipt.createdAt : new Date(remoteReceipt.createdAt),
-                lastModified: remoteReceipt.lastModified instanceof Date ? remoteReceipt.lastModified : new Date(remoteReceipt.lastModified || remoteReceipt.createdAt)
+                date: remoteReceipt.date instanceof Date ? remoteReceipt.date : 
+                  (() => {
+                    const date = new Date(remoteReceipt.date);
+                    return isNaN(date.getTime()) ? new Date() : date;
+                  })(),
+                createdAt: remoteReceipt.createdAt instanceof Date ? remoteReceipt.createdAt : 
+                  (() => {
+                    const date = new Date(remoteReceipt.createdAt);
+                    return isNaN(date.getTime()) ? new Date() : date;
+                  })(),
+                lastModified: remoteReceipt.lastModified instanceof Date ? remoteReceipt.lastModified : 
+                  (() => {
+                    const date = new Date(remoteReceipt.lastModified || remoteReceipt.createdAt);
+                    return isNaN(date.getTime()) ? new Date() : date;
+                  })()
               };
               receiptMap.set(remoteReceipt.id, processedReceipt);
             }
