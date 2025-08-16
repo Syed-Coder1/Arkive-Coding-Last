@@ -228,7 +228,7 @@ class DatabaseService {
     const store = await this.getObjectStore('users');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -292,7 +292,7 @@ class DatabaseService {
     const store = await this.getObjectStore('clients');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -346,7 +346,7 @@ class DatabaseService {
     const index = store.index('clientCnic');
     return new Promise((resolve, reject) => {
       const req = index.getAll(clientCnic);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -355,7 +355,7 @@ class DatabaseService {
     const store = await this.getObjectStore('receipts');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -426,7 +426,7 @@ class DatabaseService {
     const store = await this.getObjectStore('expenses');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -485,7 +485,7 @@ class DatabaseService {
     const store = await this.getObjectStore('activities');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -514,7 +514,7 @@ class DatabaseService {
     const store = await this.getObjectStore('notifications');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -639,7 +639,7 @@ class DatabaseService {
     const index = store.index('clientCnic');
     return new Promise((resolve, reject) => {
       const req = index.getAll(clientCnic);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -648,7 +648,7 @@ class DatabaseService {
     const store = await this.getObjectStore('documents');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -750,7 +750,7 @@ class DatabaseService {
     const store = await this.getObjectStore('employees');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -806,7 +806,7 @@ class DatabaseService {
     const store = await this.getObjectStore('attendance');
     return new Promise((resolve, reject) => {
       const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -840,7 +840,7 @@ class DatabaseService {
     const idx = store.index('employeeId');
     return new Promise((resolve, reject) => {
       const req = idx.getAll(employeeId);
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => resolve(req.result.map(item => this.deserializeDates(item)));
       req.onerror = () => reject(req.error);
     });
   }
@@ -990,9 +990,18 @@ class DatabaseService {
       if (deserialized[field] && typeof deserialized[field] === 'string') {
         try {
           deserialized[field] = new Date(deserialized[field]);
+          // Check if the date is invalid and set to null if so
+          if (isNaN(deserialized[field].getTime())) {
+            deserialized[field] = null;
+          }
         } catch (error) {
           console.warn(`Failed to parse date field ${field}:`, error);
+          deserialized[field] = null;
         }
+      }
+      // Handle cases where the field is already a Date but invalid
+      else if (deserialized[field] instanceof Date && isNaN(deserialized[field].getTime())) {
+        deserialized[field] = null;
       }
     });
 
@@ -1000,7 +1009,10 @@ class DatabaseService {
     if (deserialized.accessLog && Array.isArray(deserialized.accessLog)) {
       deserialized.accessLog = deserialized.accessLog.map((log: any) => ({
         ...log,
-        timestamp: log.timestamp ? new Date(log.timestamp) : new Date()
+        timestamp: log.timestamp ? (() => {
+          const date = new Date(log.timestamp);
+          return isNaN(date.getTime()) ? new Date() : date;
+        })() : new Date()
       }));
     }
 
