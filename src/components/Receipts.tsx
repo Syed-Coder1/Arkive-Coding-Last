@@ -754,7 +754,7 @@ export default function Receipts({ showForm: externalShowForm, onCloseForm }: Re
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Created:</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {safeFormat(selectedReceipt.createdAt, 'MMM dd, yyyy HH:mm')}
+                  {safeFormat(selectedReceipt.createdAt || new Date(), 'MMM dd, yyyy HH:mm')}
                 </span>
               </div>
             </div>

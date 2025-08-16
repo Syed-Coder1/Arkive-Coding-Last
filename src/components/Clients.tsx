@@ -880,7 +880,7 @@ export function Clients({ showForm: externalShowForm, onCloseForm }: ClientsProp
                                   Profile Updated
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {format(selectedClient.updatedAt instanceof Date ? selectedClient.updatedAt : new Date(selectedClient.updatedAt), 'MMM dd, yyyy HH:mm')}
+                                  {safeFormat(selectedClient.updatedAt, 'MMM dd, yyyy HH:mm')}
                                 </p>
                               </div>
                             </div>
